@@ -1,5 +1,4 @@
 import 'dart:convert';
-// import 'dart:io';
 
 import 'package:buscacep/http.services.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,15 +36,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _cepController = TextEditingController();
-  final String _uri = 'viacep.com.br';
 
-  String? cepret;
-  String? endereco;
-  String? cidade;
-  String? bairro;
-  String? ibge;
-  String? uf;
-  String? ddd;
+  final TextEditingController _endereco = TextEditingController();
+  final TextEditingController _cidade = TextEditingController();
+  final TextEditingController _bairro = TextEditingController();
+  final TextEditingController _ibge = TextEditingController();
+  final TextEditingController _uf = TextEditingController();
+
+  final String _uri = 'viacep.com.br';
 
   var logger = Logger(
     printer: PrettyPrinter(),
@@ -66,15 +63,17 @@ class _MyHomePageState extends State<MyHomePage> {
       logger.i(jsonResponse);
 
       setState(() {
-        cepret = jsonResponse['cep'];
-        endereco = jsonResponse['logradouro'];
-        bairro = jsonResponse['bairro'];
-        cidade = jsonResponse['localidade'];
-        uf = jsonResponse['uf'];
-        ibge = jsonResponse['ibge'];
-        ddd = jsonResponse['ddd'];
+        _endereco.text = jsonResponse['logradouro'];
+        _bairro.text = jsonResponse['bairro'];
+        _cidade.text = jsonResponse['localidade'];
+        _uf.text = jsonResponse['uf'];
+        _ibge.text = jsonResponse['ibge'];
       });
     }
+  }
+
+  bool isNumeric(String value) {
+    return double.tryParse(value) != null;
   }
 
   @override
@@ -98,18 +97,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: TextFormField(
                     controller: _cepController,
                     keyboardType: TextInputType.number,
+                    maxLength: 8,
                     decoration: const InputDecoration(
                       labelText: 'Digite o CEP',
                     ),
                     validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'O CEP deve conter 8 numeros, sem traço e sem espaço!';
+                      if (value == null || value.isEmpty) {
+                        return 'O CEP não pode estar vazio!';
+                      }
+                      if (!isNumeric(value)) {
+                        return 'O CEP deve conter apenas números, sem traço e sem espaço!';
+                      }
+                      if (value.length != 8) {
+                        return 'O CEP deve conter 8 números, sem traço e sem espaço!';
                       }
                       return null;
                     },
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
@@ -118,14 +124,14 @@ class _MyHomePageState extends State<MyHomePage> {
                             bottom: 5, top: 0, left: 20, right: 20),
                         child: ElevatedButton(
                           onPressed: () {
-                            _retornoCep(int.parse(_cepController.text));
+                            _retornoCep(int.parse(_cepController.text.trim()));
                           },
                           child: const Text(
-                            'Salvar',
-                            // style: TextStyle(
-                            //   fontSize: 30,
-                            //   color: Colors.white,
-                            // ),
+                            'Buscar',
+                            style: TextStyle(
+                              fontSize: 30,
+                              // color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -135,15 +141,61 @@ class _MyHomePageState extends State<MyHomePage> {
                 const Divider(
                   height: 20,
                 ),
-                const Text("Dados do endereço:"),
-                const SizedBox(height: 20),
-                Text("CEP: $cepret"),
-                Text("Endereço: $endereco"),
-                Text("Bairro: $bairro"),
-                Text("Cidade: $cidade"),
-                Text("UF: $uf"),
-                Text("IBGE: $ibge"),
-                Text("DDD: $ddd"),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: 0, top: 0, left: 20, right: 20),
+                  child: TextFormField(
+                    controller: _endereco,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Endereço',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: 0, top: 0, left: 20, right: 20),
+                  child: TextFormField(
+                    controller: _bairro,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Bairro',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: 0, top: 0, left: 20, right: 20),
+                  child: TextFormField(
+                    controller: _cidade,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Cidade',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: 0, top: 0, left: 20, right: 20),
+                  child: TextFormField(
+                    controller: _uf,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'UF',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: 0, top: 0, left: 20, right: 20),
+                  child: TextFormField(
+                    controller: _ibge,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Código IBGE',
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
